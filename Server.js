@@ -22,7 +22,6 @@ app.post('/registration', (req, res) => {
         })
         mongoose.connect("mongodb://localhost:27017/MyDb", { useNewUrlParser: true });
         var db = mongoose.connection;
-        console.log('its');
         db.on('error', console.error.bind(console, 'connection error:'));
         db.once('open', function () {
             // we're connected!
@@ -31,13 +30,13 @@ app.post('/registration', (req, res) => {
             if (err) {
                 return console.error(err);
             }
-            console.log('it works');
         })
-        var MongoClient = mongoose.MongoClient;
-
+        res.status(200);
+        res.send(JSON.stringify(req.body));
+    } else {
+        res.status(303);
+        res.send('Missed some parameters');
     }
-    res.status(200);
-    res.send(JSON.stringify(req.body));
 });
 
 app.use(function (req, res, next) {
