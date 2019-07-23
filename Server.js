@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const app = express();
 
-var User = require('./Db/Shema.js');
+var User = require('./Db/RelatedFiles/Shema.js');
 
 app.use(
     bodyParser.urlencoded({
@@ -22,7 +22,7 @@ app.post('/registration', (req, res) => {
         })
         mongoose.connect("mongodb://localhost:27017/MyDb", { useNewUrlParser: true });
         var db = mongoose.connection;
-        console.log('its here')
+        console.log('its');
         db.on('error', console.error.bind(console, 'connection error:'));
         db.once('open', function () {
             // we're connected!
