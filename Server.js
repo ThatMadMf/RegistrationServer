@@ -2,8 +2,12 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const app = express();
-
-var User = require('./Db/RelatedFiles/Shema.js');
+const crypto = require('crypto');
+const uuid = require('uuid');
+const User = require('./Db/RelatedFiles/Schema.js');
+const config = require('./config.js');
+const connection = require('./Db/RelatedFiles/Connection.js');
+const validator = require('email-validator');
 
 app.use(
     bodyParser.urlencoded({
@@ -11,31 +15,56 @@ app.use(
     })
 );
 app.use(bodyParser.json());
-app.post('/registration', (req, res) => {
-    if (req.body.name && req.body.email && req.body.password && req.body.confirmPassword) {
-        var CurrentUser = new User({
-            name: req.body.name,
-            email: req.body.email,
-            address: req.body.address,
-            password: req.body.password,
-            confirmPassword: req.body.confirmPassword
-        })
-        mongoose.connect("mongodb://localhost:27017/MyDb", { useNewUrlParser: true });
-        var db = mongoose.connection;
-        db.on('error', console.error.bind(console, 'connection error:'));
-        db.once('open', function () {
-            // we're connected!
-        });
-        CurrentUser.save(function (err) {
-            if (err) {
-                return console.error(err);
-            }
-        })
-        res.status(200);
-        res.send(JSON.stringify(req.body));
-    } else {
-        res.status(303);
-        res.send('Missed some parameters');
+app.post('/signup', (req, res) => {
+    var status = true;
+    for(var key in req.body){
+        if(key !== "name" && key !== "email" && key !== "address" && key !== "password" && key !== "confirmPassword") {
+            status = false;
+        }
+    }
+    if (req.body.name && req.body.email && req.body.password && req.body.confirmPassword && status === true) {
+        connection.db;
+        if (req.body.password !== req.body.confirmPassword) {
+            res.status(403);
+            res.send('passwords are not matching');
+        } 
+        else {
+            if(validator.validate(req.body.email)) {
+            var hash = crypto.createHash('md5', config.config.secret).update(req.body.password).digest('hex');
+            var CurrentUser = new User({
+                id: uuid(req.body.email),
+                name: req.body.name,
+                email: req.body.email,
+                address: req.body.address,
+                password: hash,
+                apiKey: uuid(req.body)
+            })
+            CurrentUser.save(function (err) {
+                if (err) {
+                    res.status(403);
+                    res.send(err);
+                    return console.log(err);
+                } else {
+                    res.status(200);
+                    res.send('Data saved successfully')
+                }
+            })
+        }
+        else{
+            res.status(403);
+            res.send('email is not valid');
+        }
+    }
+    } 
+    else {
+        res.status(403);
+        if(status) {
+            res.send('Missed some parameters');
+        } 
+        else {
+            res.send('Request has some forbidden value');
+        }
+        
     }
 });
 
@@ -43,4 +72,4 @@ app.use(function (req, res, next) {
     res.status(404).send('<h1>PAGE NOT FOUND</h1>')
 });
 
-app.listen(8080);
+app.listen(config.config.port);
