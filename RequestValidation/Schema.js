@@ -23,4 +23,15 @@ exports.Schema = {
         required: true
     }
 }
+
+exports.Request = {
+    type: 'object',
+    additionalProperties: false,
+    required: ['email', 'password'],
+    properties: {
+        email: {type: 'string', format: 'email'},
+        password: {type: 'string'},
+        required: true
+    }
+}
 module.exports.module;

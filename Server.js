@@ -20,7 +20,7 @@ app.use(
 );
 app.use(bodyParser.json());
 app.post('/signup', (req, res, next) => {
-    var message = requestvalidator.valid(req.body);
+    var message = requestvalidator.validReg(req.body);
     if (message) {
         return next(new RequestError(message));
     }
@@ -40,7 +40,8 @@ app.post('/signup', (req, res, next) => {
         })
         CurrentUser.save(function (err) {
             if (err) {
-                return next(new RequestError(err));
+                if(err.code = 11000)
+                    return next(new RequestError('There is the email in database'));
             } else {
                 res.status(200);
                 res.send('Data saved successfully')
@@ -49,11 +50,33 @@ app.post('/signup', (req, res, next) => {
     }
 });
 
+app.post('/login', (req, res, next) => {
+    var message = requestvalidator.validLog(req.body);
+    if (message) {
+        return next(new RequestError(message));
+    }
+    connection.db;  
+    User.find({email: req.body.email, password: crypto.createHash('md5', config.config.secret).update(req.body.password).digest('hex')},
+    function(err, user) {
+        if(err) {
+            return next(new RequestError(err));
+        }
+        if(user.length === 0) {
+            return next(new RequestError('Invalid email or password'));
+        } else {
+        res.status(200);
+        res.send('User ' + user[0].id + 'ApiKey: ' + user[0].apiKey +' logged in');
+        }
+    });
+
+});
+
 app.use(function (req, res, next) {
     res.status(404).send('<h1>PAGE NOT FOUND</h1>')
 });
 
 app.use(function (err, req, res, next) {
+    console.log({ err });
     if (err instanceof RequestError) {
         res.status(400);
         res.send(err.message);

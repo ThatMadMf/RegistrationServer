@@ -1,14 +1,26 @@
 const Ajv = require('ajv');
 const ajv = Ajv();
 const Schema = require('./Schema.js');
-const validate = ajv.compile(Schema.Schema);
+const validateRegistration = ajv.compile(Schema.Schema);
+const validateLogin = ajv.compile(Schema.Request);
 
-exports.valid = function (data) {
-    var boolres = validate(data)
-    var result = '';
+exports.validReg = function (data) {
+    let boolres = validateRegistration(data);
+    let result = '';
     if(!boolres) {
-        for(var item in validate.errors) {
-            result += validate.errors[item].message + '\n';
+        for(let item in validateRegistration.errors) {
+            result += validateRegistration.errors[item].message + '\n';
+        }
+        return result;
+    }
+}
+
+exports.validLog = function(data) {
+    let boolres = validateLogin(data);
+    let result = '';
+    if(!boolres) {
+        for(let item in validateLogin.errors) {
+            result += validateLogin.errors[item].message + '\n';
         }
         return result;
     }
