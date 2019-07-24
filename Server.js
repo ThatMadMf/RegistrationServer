@@ -4,9 +4,9 @@ const bodyParser = require("body-parser");
 const app = express();
 const crypto = require('crypto');
 const uuid = require('uuid');
-const User = require('./Db/RelatedFiles/Schema.js');
+const User = require('./DbFiles/Schema.js');
 const config = require('./config.js');
-const connection = require('./Db/RelatedFiles/Connection.js');
+const connection = require('./DbFiles/Connection.js');
 const validator = require('email-validator');
 
 app.use(
