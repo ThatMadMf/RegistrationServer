@@ -17,8 +17,8 @@ app.use(
 app.use(bodyParser.json());
 app.post('/signup', (req, res) => {
     var status = true;
-    for(var key in req.body){
-        if(key !== "name" && key !== "email" && key !== "address" && key !== "password" && key !== "confirmPassword") {
+    for (var key in req.body) {
+        if (key !== "name" && key !== "email" && key !== "address" && key !== "password" && key !== "confirmPassword") {
             status = false;
         }
     }
@@ -27,44 +27,44 @@ app.post('/signup', (req, res) => {
         if (req.body.password !== req.body.confirmPassword) {
             res.status(403);
             res.send('passwords are not matching');
-        } 
-        else {
-            if(validator.validate(req.body.email)) {
-            var hash = crypto.createHash('md5', config.config.secret).update(req.body.password).digest('hex');
-            var CurrentUser = new User({
-                id: uuid(req.body.email),
-                name: req.body.name,
-                email: req.body.email,
-                address: req.body.address,
-                password: hash,
-                apiKey: uuid(req.body)
-            })
-            CurrentUser.save(function (err) {
-                if (err) {
-                    res.status(403);
-                    res.send(err);
-                    return console.log(err);
-                } else {
-                    res.status(200);
-                    res.send('Data saved successfully')
-                }
-            })
         }
-        else{
-            res.status(403);
-            res.send('email is not valid');
+        else {
+            if (validator.validate(req.body.email)) {
+                var hash = crypto.createHash('md5', config.config.secret).update(req.body.password).digest('hex');
+                var CurrentUser = new User({
+                    id: uuid(req.body.email),
+                    name: req.body.name,
+                    email: req.body.email,
+                    address: req.body.address,
+                    password: hash,
+                    apiKey: uuid(req.body)
+                })
+                CurrentUser.save(function (err) {
+                    if (err) {
+                        res.status(403);
+                        res.send(err);
+                        return console.log(err);
+                    } else {
+                        res.status(200);
+                        res.send('Data saved successfully')
+                    }
+                })
+            }
+            else {
+                res.status(403);
+                res.send('email is not valid');
+            }
         }
     }
-    } 
     else {
         res.status(403);
-        if(status) {
+        if (status) {
             res.send('Missed some parameters');
-        } 
+        }
         else {
             res.send('Request has some forbidden value');
         }
-        
+
     }
 });
 
