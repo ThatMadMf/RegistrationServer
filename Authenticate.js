@@ -1,20 +1,18 @@
-var url = require('url');
+let url = require('url');
 const User = require('./DbFiles/Schema');
 const RequestError = require('./RequestError');
 
 function Authenticate(req, res, next) {
-    var params = req.body.apiKey;
+    let params = req.body.apiKey;
     User.findOne({ apiKey: params },
         function (err, founduser) {
             if (err) {
-                req.ReqErr = new RequestError(400, err);
-                console.log('err')
-                next();
+                console.log('err');
+                return next(new RequestError(400, err));
             }
             if (founduser === null) {
-                req.ReqErr = new RequestError(401, 'User is not logged');
                 console.log('User is not logged');
-                next();
+                return next (new RequestError(401, 'User is not logged'));
             } 
             req.user = founduser;
             console.log('authenticate');

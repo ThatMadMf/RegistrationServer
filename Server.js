@@ -1,16 +1,20 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
-const app = express();
 const crypto = require('crypto');
 const uuidv4 = require('uuid/v4');
+const Ajv = require('ajv');
+const ajv = Ajv();
+const app = express();
 const User = require('./DbFiles/Schema');
 const config = require('./config');
 const connection = require('./DbFiles/Connection');
 const requestvalidator = require('./RequestValidation/Validator');
-const authenticate = require('./ApiKey');
+const authenticate = require('./Authenticate');
 const RequestError = require('./RequestError');
-const change = require('./ChangeParams');
+const authorize = require('./Authorize');
+const validateRegistration = ajv.compile(require('./RequestValidation/Schema').Schema);
+const validateLogin = ajv.compile(require('./RequestValidation/Schema').Request);
 
 app.use(
     bodyParser.urlencoded({
@@ -19,7 +23,7 @@ app.use(
 );
 app.use(bodyParser.json());
 app.post('/signup', (req, res, next) => {
-    var message = requestvalidator.validReg(req.body);
+    let message = requestvalidator.Validation(req.body, validateRegistration);
     if (message) {
         return next(new RequestError(400, message));
     }
@@ -28,8 +32,8 @@ app.post('/signup', (req, res, next) => {
         return next(new RequestError(400, 'Passwords dont match!'));
     }
     else {
-        var hash = crypto.createHash('md5', config.config.secret).update(req.body.password).digest('hex');
-        var CurrentUser = new User({
+        let hash = crypto.createHash('md5', config.config.secret).update(req.body.password).digest('hex');
+        let CurrentUser = new User({
             id: uuidv4(),
             name: req.body.name,
             email: req.body.email,
@@ -50,7 +54,7 @@ app.post('/signup', (req, res, next) => {
 });
 
 app.post('/login', (req, res, next) => {
-    var message = requestvalidator.validLog(req.body);
+    let message = requestvalidator.Validation(req.body, validateLogin);
     if (message) {
         return next(new RequestError(400, message));
     }
@@ -69,23 +73,24 @@ app.post('/login', (req, res, next) => {
         });
 
 });
-var result;
+let result;
 app.get('/mysecret', authenticate, (req, res, next) => {
     console.log(typeof req.ReqErr);
-    if (req.ReqErr) {
-        return next(new RequestError(req.ReqErr.code, req.ReqErr.message));
-    } else {
-        res.send('This is your secret page, ' + req.user.name);
-    }
+    res.send('This is your secret page, ' + req.user.name);
 });
 
-app.put('/users/:userId',authenticate, change, (req, res, next) => {
-    if (req.ReqErr) {
-        return next(new RequestError(req.ReqErr.code, req.ReqErr.message));
-    } else {
-        res.send('it\'s complete');
-    }
-    
+app.put('/users/:userId', authenticate, authorize, (req, res, next) => {
+    User.findOneAndUpdate(req.user.apiKey, req.body,
+        function (err) {
+            if (err) {
+                return next(new RequestError(400, err));
+            }
+            else {
+                console.log('user upd');
+                res.status(204);
+                res.send('it\'s complete');
+            }
+        });
 });
 
 app.use(function (req, res, next) {
@@ -97,6 +102,7 @@ app.use(function (err, req, res, next) {
         res.status(err.code);
         res.send(err.message);
     } else {
+        console.log(err);
         res.status(500);
         res.send('<h1>Server Error</h1>');
     }
