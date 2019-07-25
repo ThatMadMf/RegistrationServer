@@ -34,4 +34,16 @@ exports.Request = {
         required: true
     }
 }
+
+exports.Change = {
+    type: 'object',
+    additionalProperties: false,
+    required: ['apiKey'],
+    properties: {
+        email: {type: 'string', format: 'email'},
+        name: {type: 'string'},
+        address: {type: 'string'},
+        apiKey: {type : 'string'}
+    }
+}
 module.exports.module;

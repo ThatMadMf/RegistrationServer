@@ -4,14 +4,13 @@ const bodyParser = require("body-parser");
 const app = express();
 const crypto = require('crypto');
 const uuidv4 = require('uuid/v4');
-const User = require('./DbFiles/Schema.js');
-const config = require('./config.js');
-const connection = require('./DbFiles/Connection.js');
-const validator = require('email-validator');
-const requestvalidator = require('./RequestValidation/Validator.js');
-
-class RequestError extends Error {
-}
+const User = require('./DbFiles/Schema');
+const config = require('./config');
+const connection = require('./DbFiles/Connection');
+const requestvalidator = require('./RequestValidation/Validator');
+const authenticate = require('./ApiKey');
+const RequestError = require('./RequestError');
+const change = require('./ChangeParams');
 
 app.use(
     bodyParser.urlencoded({
@@ -22,11 +21,11 @@ app.use(bodyParser.json());
 app.post('/signup', (req, res, next) => {
     var message = requestvalidator.validReg(req.body);
     if (message) {
-        return next(new RequestError(message));
+        return next(new RequestError(400, message));
     }
     connection.db;
     if (req.body.password !== req.body.confirmPassword) {
-        return next(new RequestError('Passwords dont match!'));
+        return next(new RequestError(400, 'Passwords dont match!'));
     }
     else {
         var hash = crypto.createHash('md5', config.config.secret).update(req.body.password).digest('hex');
@@ -40,11 +39,11 @@ app.post('/signup', (req, res, next) => {
         })
         CurrentUser.save(function (err) {
             if (err) {
-                if(err.code = 11000)
-                    return next(new RequestError('There is the email in database'));
+                if (err.code = 11000)
+                    return next(new RequestError(400, 'There is the email in database'));
             } else {
                 res.status(200);
-                res.send('Data saved successfully')
+                res.send('Data saved successfully');
             }
         })
     }
@@ -53,22 +52,40 @@ app.post('/signup', (req, res, next) => {
 app.post('/login', (req, res, next) => {
     var message = requestvalidator.validLog(req.body);
     if (message) {
-        return next(new RequestError(message));
+        return next(new RequestError(400, message));
     }
-    connection.db;  
-    User.find({email: req.body.email, password: crypto.createHash('md5', config.config.secret).update(req.body.password).digest('hex')},
-    function(err, user) {
-        if(err) {
-            return next(new RequestError(err));
-        }
-        if(user.length === 0) {
-            return next(new RequestError('Invalid email or password'));
-        } else {
-        res.status(200);
-        res.send('User ' + user[0].id + 'ApiKey: ' + user[0].apiKey +' logged in');
-        }
-    });
+    connection.db;
+    User.find({ email: req.body.email, password: crypto.createHash('md5', config.config.secret).update(req.body.password).digest('hex') },
+        function (err, user) {
+            if (err) {
+                return next(new RequestError(err));
+            }
+            if (user.length === 0) {
+                return next(new RequestError(400, 'Invalid email or password'));
+            } else {
+                res.status(200);
+                res.send('User ' + user[0].id + 'ApiKey: ' + user[0].apiKey + ' logged in');
+            }
+        });
 
+});
+var result;
+app.get('/mysecret', authenticate, (req, res, next) => {
+    console.log(typeof req.ReqErr);
+    if (req.ReqErr) {
+        return next(new RequestError(req.ReqErr.code, req.ReqErr.message));
+    } else {
+        res.send('This is your secret page, ' + req.user.name);
+    }
+});
+
+app.put('/users/:userId',authenticate, change, (req, res, next) => {
+    if (req.ReqErr) {
+        return next(new RequestError(req.ReqErr.code, req.ReqErr.message));
+    } else {
+        res.send('it\'s complete');
+    }
+    
 });
 
 app.use(function (req, res, next) {
@@ -76,9 +93,8 @@ app.use(function (req, res, next) {
 });
 
 app.use(function (err, req, res, next) {
-    console.log({ err });
     if (err instanceof RequestError) {
-        res.status(400);
+        res.status(err.code);
         res.send(err.message);
     } else {
         res.status(500);
@@ -87,3 +103,5 @@ app.use(function (err, req, res, next) {
 })
 
 app.listen(config.config.port);
+
+module.exports = RequestError;
