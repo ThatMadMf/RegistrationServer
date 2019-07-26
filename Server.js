@@ -31,7 +31,7 @@ app.post('/signup', (req, res, next) => {
         return next(new RequestError(400, 'Passwords dont match!'));
     }
     else {
-        let hash = crypto.createHash('md5', config.config.secret).update(req.body.password).digest('hex');
+        let hash = crypto.createHash('md5', config.secret).update(req.body.password).digest('hex');
         let CurrentUser = new User({
             id: uuidv4(),
             name: req.body.name,
@@ -103,6 +103,20 @@ app.delete('/users/:userId', authenticate, authorize, (req, res, next) => {
                 console.log('deleted');
                 res.status(200);
                 res.send('deleted');
+            }
+        });
+});
+
+app.get('/users/:userId', authenticate, (req, res, next) => {
+    User.findOne({id: req.params.userId}, 
+        function(err, user) {
+            if(err) {
+                return next(new RequestError(400, err));
+            }
+            else {
+                res.status(200);
+                res.send({id: user.id, name: user.name, email: user.email, 
+                    address: user.address});
             }
         });
 });
