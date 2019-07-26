@@ -1,18 +1,13 @@
 const url = require('url');
 const Ajv = require('ajv')
 const ajv = Ajv();
-const User = require('./DbFiles/Schema');
+const User = require('./DbFiles/UserSchema');
 const RequestError = require('./RequestError');
 const requestvalidator = require('./RequestValidation/Validator');
-const validateChange = ajv.compile(require('./RequestValidation/Schema').Change);
 
 function Authorize(req, res, next) {
-    let message = requestvalidator.Validation(req.body, validateChange);
-    if (message) {
-        console.log('error found')
-        return next(new RequestError(400, message));
-    }
-    if (req.user.id !== req.params.userId) {
+    let tempurl = String(req.baseUrl.match(/[^\/]+$/));
+    if (req.user.id !== req.params.userId && req.user.id !== tempurl) {
         return next(new RequestError(403, 'Authorization Error'));
     }
     console.log('authorize');

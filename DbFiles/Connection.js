@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 mongoose.connect("mongodb://localhost:27017/MyDb", { useNewUrlParser: true });
-var db = mongoose.connection;
+const db = mongoose.connection;
 db.on('error', () => {
     res.status(403);
     console.log('conndection error');
@@ -11,6 +11,5 @@ db.once('open', function () {
     console.log('we\'re connected!');
 });
 
-exports.db;
 
-module.exports.module
+module.exports = db;

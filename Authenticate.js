@@ -1,8 +1,9 @@
 let url = require('url');
-const User = require('./DbFiles/Schema');
+const User = require('./DbFiles/UserSchema');
 const RequestError = require('./RequestError');
 
 function Authenticate(req, res, next) {
+    console.log(req.params);
     let params = req.body.apiKey;
     User.findOne({ apiKey: params },
         function (err, founduser) {
@@ -17,7 +18,6 @@ function Authenticate(req, res, next) {
             req.user = founduser;
             console.log('authenticate');
             next();
-            
         });
 };
 

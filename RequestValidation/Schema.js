@@ -1,16 +1,4 @@
-// exports.Schema = {
-//     type: 'object',
-//     additionalProperties: false,
-//     required: ['name', 'email', 'password', 'confirmPassword'],
-//     items: { 
-//         name: {type: 'string'}, 
-//         email: {type: 'email'}, 
-//         address: {type: 'string'}, 
-//         password: {type: 'string'},
-//         confirmPassword: {type: 'string'}
-//     }
-// }
-exports.Schema = {
+const Schema = {
     type: 'object',
     additionalProperties: false,
     required: ['name', 'email', 'password', 'confirmPassword'],
@@ -24,7 +12,7 @@ exports.Schema = {
     }
 }
 
-exports.Request = {
+const Request = {
     type: 'object',
     additionalProperties: false,
     required: ['email', 'password'],
@@ -35,7 +23,7 @@ exports.Request = {
     }
 }
 
-exports.Change = {
+const Change = {
     type: 'object',
     additionalProperties: false,
     required: ['apiKey'],
@@ -46,4 +34,26 @@ exports.Change = {
         apiKey: {type : 'string'}
     }
 }
-module.exports.module;
+
+const Post = {
+    type : 'object',
+    additionalProperties: false,
+    required: ['Title', 'PostContent', 'apiKey'],
+    properties: {
+        Title: {type: 'string'},
+        PostContent: {type: 'string'},
+        apiKey: {type: 'string'}
+    }
+}
+
+const Put = {
+    type: 'object',
+    additionalProperties: false,
+    required: ['apiKey'],
+    properties: {
+        Title: {type: 'string'},
+        PostContent: {type: 'string'},
+        apiKey: {type: 'string'}
+    }
+}
+module.exports = {Change, Request, Schema, Post, Put};

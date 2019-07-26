@@ -6,15 +6,18 @@ const uuidv4 = require('uuid/v4');
 const Ajv = require('ajv');
 const ajv = Ajv();
 const app = express();
-const User = require('./DbFiles/Schema');
+const User = require('./DbFiles/UserSchema');
 const config = require('./config');
 const connection = require('./DbFiles/Connection');
 const requestvalidator = require('./RequestValidation/Validator');
 const authenticate = require('./Authenticate');
 const RequestError = require('./RequestError');
 const authorize = require('./Authorize');
+const Post = require('./Posts');
 const validateRegistration = ajv.compile(require('./RequestValidation/Schema').Schema);
 const validateLogin = ajv.compile(require('./RequestValidation/Schema').Request);
+const validateChange = ajv.compile(require('./RequestValidation/Schema').Change);
+
 
 app.use(
     bodyParser.urlencoded({
@@ -42,7 +45,6 @@ app.post('/signup', (req, res, next) => {
         })
         CurrentUser.save(function (err) {
             if (err) {
-                if (err)
                     return next(new RequestError(400, 'For some reason can\'t save user to database'));
             } else {
                 res.status(200);
@@ -79,6 +81,11 @@ app.get('/mysecret', authenticate, (req, res, next) => {
 });
 
 app.put('/users/:userId', authenticate, authorize, (req, res, next) => {
+    let message = requestvalidator.Validation(req.body, validateChange);
+    if (message) {
+        console.log('error found')
+        return next(new RequestError(400, message));
+    }
     User.findOneAndUpdate(req.user.apiKey, req.body,
         function(err) {
             if(err) {
@@ -120,6 +127,8 @@ app.get('/users/:userId', authenticate, (req, res, next) => {
             }
         });
 });
+
+app.use('/posts/:userId', Post);
 
 app.use(function (req, res, next) {
     res.status(404).send('<h1>PAGE NOT FOUND</h1>')
