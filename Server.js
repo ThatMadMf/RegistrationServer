@@ -27,7 +27,6 @@ app.post('/signup', (req, res, next) => {
     if (message) {
         return next(new RequestError(400, message));
     }
-    connection.db;
     if (req.body.password !== req.body.confirmPassword) {
         return next(new RequestError(400, 'Passwords dont match!'));
     }
@@ -43,8 +42,8 @@ app.post('/signup', (req, res, next) => {
         })
         CurrentUser.save(function (err) {
             if (err) {
-                if (err.code = 11000)
-                    return next(new RequestError(400, 'There is the email in database'));
+                if (err)
+                    return next(new RequestError(400, 'For some reason can\'t save user to database'));
             } else {
                 res.status(200);
                 res.send('Data saved successfully');
@@ -58,22 +57,22 @@ app.post('/login', (req, res, next) => {
     if (message) {
         return next(new RequestError(400, message));
     }
-    connection.db;
-    User.find({ email: req.body.email, password: crypto.createHash('md5', config.config.secret).update(req.body.password).digest('hex') },
+    User.findOne({ email: req.body.email, password: crypto.createHash('md5', config.secret).update(req.body.password).digest('hex') },
         function (err, user) {
             if (err) {
-                return next(new RequestError(err));
+                return next(new RequestError(400, err));
             }
-            if (user.length === 0) {
+            if (user === null) {
                 return next(new RequestError(400, 'Invalid email or password'));
             } else {
                 res.status(200);
-                res.send('User ' + user[0].id + 'ApiKey: ' + user[0].apiKey + ' logged in');
+                res.send({id: user.id, name: user.name, email: user.email, 
+                    address: user.address, apiKey: user.apiKey});
             }
         });
 
 });
-let result;
+
 app.get('/mysecret', authenticate, (req, res, next) => {
     console.log(typeof req.ReqErr);
     res.send('This is your secret page, ' + req.user.name);
@@ -81,14 +80,29 @@ app.get('/mysecret', authenticate, (req, res, next) => {
 
 app.put('/users/:userId', authenticate, authorize, (req, res, next) => {
     User.findOneAndUpdate(req.user.apiKey, req.body,
-        function (err) {
-            if (err) {
+        function(err) {
+            if(err) {
                 return next(new RequestError(400, err));
             }
             else {
                 console.log('user upd');
-                res.status(204);
-                res.send('it\'s complete');
+                res.status(200);
+                res.send('complete');
+            }
+        });
+});
+
+app.delete('/users/:userId', authenticate, authorize, (req, res, next) => {
+    console.log('in delete');
+    User.findOneAndDelete(req.user.apiKey, 
+        function(err) {
+            if(err) {
+                return next(new RequestError(400, err));
+            }
+            else {
+                console.log('deleted');
+                res.status(200);
+                res.send('deleted');
             }
         });
 });
@@ -108,6 +122,6 @@ app.use(function (err, req, res, next) {
     }
 })
 
-app.listen(config.config.port);
+app.listen(config.port);
 
 module.exports = RequestError;

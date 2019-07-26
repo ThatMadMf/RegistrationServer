@@ -1,7 +1,6 @@
-exports.config = {
+const config = {
     port: 8080,
     secret: 'regserver'
 }
 
-
-module.exports.module;
+module.exports = config;

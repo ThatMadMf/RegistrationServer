@@ -6,7 +6,7 @@ const RequestError = require('./RequestError');
 const requestvalidator = require('./RequestValidation/Validator');
 const validateChange = ajv.compile(require('./RequestValidation/Schema').Change);
 
-function ChangeParams(req, res, next) {
+function Authorize(req, res, next) {
     let message = requestvalidator.Validation(req.body, validateChange);
     if (message) {
         console.log('error found')
@@ -15,8 +15,9 @@ function ChangeParams(req, res, next) {
     if (req.user.id !== req.params.userId) {
         return next(new RequestError(403, 'Authorization Error'));
     }
+    console.log('authorize');
     next();
 }
 
 
-module.exports = ChangeParams;
+module.exports = Authorize;
