@@ -45,7 +45,7 @@ app.post('/signup', (req, res, next) => {
         })
         CurrentUser.save(function (err) {
             if (err) {
-                    return next(new RequestError(400, 'For some reason can\'t save user to database'));
+                return next(new RequestError(400, 'For some reason can\'t save user to database'));
             } else {
                 res.status(200);
                 res.send('Data saved successfully');
@@ -68,8 +68,10 @@ app.post('/login', (req, res, next) => {
                 return next(new RequestError(400, 'Invalid email or password'));
             } else {
                 res.status(200);
-                res.send({id: user.id, name: user.name, email: user.email, 
-                    address: user.address, apiKey: user.apiKey});
+                res.send({
+                    id: user.id, name: user.name, email: user.email,
+                    address: user.address, apiKey: user.apiKey
+                });
             }
         });
 
@@ -87,8 +89,8 @@ app.put('/users/:userId', authenticate, authorize, (req, res, next) => {
         return next(new RequestError(400, message));
     }
     User.findOneAndUpdate(req.user.apiKey, req.body,
-        function(err) {
-            if(err) {
+        function (err) {
+            if (err) {
                 return next(new RequestError(400, err));
             }
             else {
@@ -101,9 +103,9 @@ app.put('/users/:userId', authenticate, authorize, (req, res, next) => {
 
 app.delete('/users/:userId', authenticate, authorize, (req, res, next) => {
     console.log('in delete');
-    User.findOneAndDelete(req.user.apiKey, 
-        function(err) {
-            if(err) {
+    User.findOneAndDelete(req.user.apiKey,
+        function (err) {
+            if (err) {
                 return next(new RequestError(400, err));
             }
             else {
@@ -115,15 +117,17 @@ app.delete('/users/:userId', authenticate, authorize, (req, res, next) => {
 });
 
 app.get('/users/:userId', authenticate, (req, res, next) => {
-    User.findOne({id: req.params.userId}, 
-        function(err, user) {
-            if(err) {
+    User.findOne({ id: req.params.userId },
+        function (err, user) {
+            if (err) {
                 return next(new RequestError(400, err));
             }
             else {
                 res.status(200);
-                res.send({id: user.id, name: user.name, email: user.email, 
-                    address: user.address});
+                res.send({
+                    id: user.id, name: user.name, email: user.email,
+                    address: user.address
+                });
             }
         });
 });

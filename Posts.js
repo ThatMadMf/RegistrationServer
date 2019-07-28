@@ -70,7 +70,21 @@ router.get('/', authenticate, (req, res, next) => {
 });
 
 router.delete('/', authenticate, authorize, (req, res, next) => {
-    
+    let tempurl = String(req.baseUrl.match(/[^\/]+$/));
+    Post.findOneAndDelete({ CreatorId: tempurl, Title: req.body.Title },
+        function (err, findres) {
+            if (err) {
+                return next(new RequestError(400, err));
+            }
+            if (findres === null) {
+                return next(new RequestError(400, 'Cannot find the post'));
+            }
+            else {
+                console.log('deleted');
+                res.status(200);
+                res.send('deleted');
+            }
+        });
 });
 
 module.exports = router;
