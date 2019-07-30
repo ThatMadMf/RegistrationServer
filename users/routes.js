@@ -5,8 +5,9 @@ const authenticate = require('../authenticate');
 const authorize = require('../authorize');
 const User = require('./schema');
 const RequestError = require('../errors/RequestError');
+const requserValidator = require('../Validator');
 
-// router.param('users', function (req, res, next, userId) {
+// router.param('user', function (req, res, next, userId) {
 //     User.findOne({ userId: userId },
 //         function (err, founduser) {
 //             if (err) {
@@ -23,14 +24,13 @@ const RequestError = require('../errors/RequestError');
 //         });
 // });
 
-router.put('/:userId', authenticate, authorize, (req, res, next) => {
-    
-    let message = requestvalidator.Validation(req.body, validateChange);
+router.put('/:userId', authenticate, authorize, (req, res, next) => { //if user passed authentication & authorization - commit given changes
+    let message = requserValidator.Validation(req.body, validateChange);
     if (message) {
         console.log('error found')
         return next(new RequestError(400, message));
     }
-    User.findOneAndUpdate(req.user.apiKey, req.body,
+    User.findOneAndUpdate({apiKey: req.headers['x-api-key']}, req.body,
         function (err) {
             if (err) {
                 return next(new RequestError(400, err));
@@ -44,7 +44,7 @@ router.put('/:userId', authenticate, authorize, (req, res, next) => {
 });
 
 router.delete('/:userId', authenticate, authorize, (req, res, next) => {
-    User.findOneAndDelete(req.user.apiKey,
+    User.findOneAndDelete({apiKey: req.headers['x-api-key']},
         function (err) {
             if (err) {
                 return next(new RequestError(400, err));

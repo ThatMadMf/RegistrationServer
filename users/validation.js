@@ -30,12 +30,10 @@ const loginreq = ajv.compile({
 const changereq = ajv.compile({
     type: 'object',
     additionalProperties: false,
-    required: ['apiKey'],
     properties: {
         email: {type: 'string', format: 'email'},
         name: {type: 'string'},
-        address: {type: 'string'},
-        apiKey: {type : 'string'}
+        address: {type: 'string'}
     }
 });
 

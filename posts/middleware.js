@@ -8,7 +8,7 @@ function authorize(req, res, next) {
                 return next(new RequestError(400, err))
             }
             if(foundres === null) {
-                return next(new RequestError(400, 'Cannot find user'));
+                return next(new RequestError(400, 'Cannot find post'));
             } else {
                 if(foundres.userId !== req.user.id) {
                     return next(new RequestError(400, 'users do not match'));

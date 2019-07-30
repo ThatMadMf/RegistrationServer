@@ -2,9 +2,9 @@ let url = require('url');
 const User = require('./users/schema');
 const RequestError = require('./errors/RequestError');
 
-function authenticate(req, res, next) {
+function authenticate(req, res, next) {    //searching user by given apiKey
     console.log(req.params);
-    let params = req.body.apiKey;
+    let params = req.headers['x-api-key'];
     User.findOne({ apiKey: params },
         function (err, founduser) {
             if (err) {

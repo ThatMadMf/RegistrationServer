@@ -21,6 +21,7 @@ app.use(
     })
 );
 app.use(bodyParser.json());
+
 app.post('/signup', (req, res, next) => {
     let message = requestvalidator.Validation(req.body, validateRegistration); 
     if (message) {
@@ -37,7 +38,7 @@ app.post('/signup', (req, res, next) => {
             email: req.body.email,
             address: req.body.address,
             password: hash,
-            apiKey: uuidv4()                                        //creating and saving new user
+            apiKey: uuidv4()                                        //if everything is ok - creating and saving new user
         })
         CurrentUser.save(function (err) {
             if (err) {
@@ -56,7 +57,7 @@ app.post('/login', (req, res, next) => {
         return next(new RequestError(400, message));
     }
     User.findOne({ email: req.body.email, password: crypto.createHash('md5', config.secret).update(req.body.password).digest('hex') },
-        function (err, user) {
+        function (err, user) {                                  //if passwod and email matchs - sending apiKey to user
             if (err) {
                 return next(new RequestError(400, err));
             }
@@ -82,13 +83,13 @@ app.use('/users', users);
 app.use('/posts', Post);
 
 app.use(function (req, res, next) {
-    res.status(404).send('<h1>PAGE NOT FOUND</h1>')
+    res.status(404).send('<h1>PAGE NOT FOUND</h1>');
 });
 
 app.use(function (err, req, res, next) {
     if (err instanceof RequestError) {
         res.status(err.code);
-        res.send(err.message);
+        res.send(err.message);  
     } else {
         console.log(err);
         res.status(500);

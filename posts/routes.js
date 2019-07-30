@@ -6,10 +6,12 @@ const requestvalidator = require('../Validator');
 const validatePost = require('./validation').post;
 const validatePut = require('./validation').put;
 const Post = require('./schema');
+const validateDel = require('./validation').del;
 const RequestError = require('../errors/RequestError');
 const router = express.Router();
 
-
+//This router will give response for post, get, put and delete request by given postId.
+//For sake of security user must pass authentication to create a new post and athourization to change existing post
 router.post('/', authenticate, (req, res, next) => {
     let message = requestvalidator.Validation(req.body, validatePost);
     if (message) {
@@ -39,11 +41,9 @@ router.put('/:postId', authenticate, authorize, (req, res, next) => {
     }
     let Change = {};
     for (let it in req.body) {
-        if (it !== 'apiKey') {
             Change[it] = req.body[it]
-        }
     }
-    Post.findOneAndUpdate(req.params.postId, Change,
+    Post.findOneAndUpdate({postId: req.params.postId}, Change,
         function (err) {
             if (err) {
                 return next(new RequestError(400, err));
@@ -69,7 +69,11 @@ router.get('/:postId', authenticate, (req, res, next) => {
 });
 
 router.delete('/:postId', authenticate, authorize, (req, res, next) => {
-    Post.findOneAndDelete({ postID: req.params.postId},
+    let message = requestvalidator.Validation(req.body, validateDel);
+    if (message) {
+        return next(new RequestError(400, message));
+    }
+    Post.findOneAndDelete({ postId: req.params.postId},
         function (err, findres) {
             if (err) {
                 return next(new RequestError(400, err));
