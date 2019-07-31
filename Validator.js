@@ -1,15 +1,12 @@
-const Ajv = require('ajv');
-const ajv = Ajv();
-
-exports.Validation = function (data, validator) {
-    let boolres = validator(data);
-    let result = '';
-    if(!boolres) {
-        for(let item in validator.errors) {
-            result += validator.errors[item].message + '\n';
-        }
-        return result;
+function validation (data, validator) {
+  const boolres = validator(data)
+  let result = ''
+  if (!boolres) {
+    for (const item in validator.errors) {
+      result += validator.errors[item].message + '\n'
     }
+    return result
+  }
 }
 
-module.exports.module;
+module.exports = { validation }

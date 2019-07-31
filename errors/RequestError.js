@@ -1,8 +1,8 @@
 class RequestError extends Error {
-    constructor(code, message) {
-        super(message);
-        this.code = code;
-    }
+  constructor (code, message) {
+    super(message)
+    this.code = code
+  }
 }
 
-module.exports =  RequestError;
+module.exports = RequestError
