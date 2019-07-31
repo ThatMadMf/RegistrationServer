@@ -21,7 +21,8 @@ const PostSchema = new Schema({
   createdAt: {
     type: Date,
     required: true
-  }
+  },
+  likedBy: [String]
 })
 
 var UserPost = mongoose.model('Post', PostSchema)

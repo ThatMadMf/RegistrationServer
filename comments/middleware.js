@@ -2,7 +2,7 @@ const RequestError = require('../errors/RequestError')
 const comment = require('./schema')
 
 function authorize (req, res, next) {
-  comment.findOne({ id: req.params.commentId},
+  comment.findOne({ id: req.params.commentId },
     (err, foundres) => {
       if (err) {
         return next(new RequestError(400, err))

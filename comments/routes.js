@@ -20,13 +20,13 @@ router.post('/', authenticate, (req, res, next) => {
     content: req.body.content,
     createdAt: new Date()
   })
-  newComment.save((err) => {
-    if (err) {
-      console.log(err)
-      return next(new RequestError(400, 'For some reason cannot save to database'))
-    }
+  newComment.save()
+  .then(() => {
     res.status(200)
     res.send('Comment successfully saved')
+  }) 
+  .catch(err => {
+    return next(new RequestError(400, err))
   })
 })
 
@@ -39,44 +39,38 @@ router.put('/:commentId', authenticate, authorize, (req, res, next) => {
   for (let it in req.body) {
     Change[it] = req.body[it]
   }
-  Comment.findOneAndUpdate({ id: req.params.commentId }, Change,
-    function (err) {
-      if (err) {
-        return next(new RequestError(400, err))
-      }
-      console.log('comment upd')
-      res.status(200)
-      res.send('complete')
-    })
+  Comment.findOneAndUpdate({ id: req.params.commentId }, Change)
+  .then(() => {
+    res.status(200)
+    res.send('complete')
+  })
+  .catch(err => {
+    return next(new RequestError(400, err))
+  })
 })
 
 router.get('/:commentId', authenticate, (req, res, next) => {
-  Comment.findOne({ id: req.params.commentId },
-    function (err, comment) {
-      if (err) {
-        return next(new RequestError(400, err))
-      } else {
-        console.log(comment)
+  Comment.findOne({ id: req.params.commentId })
+  .then (findres => {
         res.status(200)
         res.send(comment)
-      }
-    })
+  })
+  .catch(err => {
+    return next(new RequestError(400, err))
+  })
 })
 
 router.delete('/:commentId', authenticate, authorize, (req, res, next) => {
-  Comment.findOneAndDelete({ id: req.params.commentId },
-    function (err, findres) {
-      if (err) {
-        return next(new RequestError(400, err))
-      }
-      if (findres === null) {
-        return next(new RequestError(400, 'Cannot find the comment'))
-      } else {
-        console.log('deleted')
+  Comment.findOneAndDelete({ id: req.params.commentId })
+    .then (findres => {
+      console.log('deleted')
         res.status(200)
         res.send('deleted')
-      }
     })
-})
+    .catch(err => {
+      console.log('err')
+      return next(new RequestError(400, err))
+    })
+})   
 
-module.exports = router;
+module.exports = router
