@@ -6,6 +6,7 @@ const authorize = require('../authorize')
 const User = require('./schema')
 const RequestError = require('../errors/RequestError')
 const requserValidator = require('../Validator')
+const toJson = require('./services').toJson
 
 router.put('/:userId', authenticate, authorize, (req, res, next) => { // if user passed authentication & authorization - commit given changes
   const message = requserValidator.Validation(req.body, validateChange)
@@ -37,13 +38,7 @@ router.delete('/:userId', authenticate, authorize, (req, res, next) => {
 router.get('/:userId', authenticate, (req, res, next) => {
   User.findOne({ id: req.params.userId })
     .then(user => {
-      res.status(200)
-      res.send({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        address: user.address
-      })
+      res.status(200).send(toJson(user))
     })
     .catch(err => {
       return next(new RequestError(400, err))

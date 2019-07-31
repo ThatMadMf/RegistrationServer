@@ -21,13 +21,13 @@ router.post('/', authenticate, (req, res, next) => {
     createdAt: new Date()
   })
   newComment.save()
-  .then(() => {
-    res.status(200)
-    res.send('Comment successfully saved')
-  }) 
-  .catch(err => {
-    return next(new RequestError(400, err))
-  })
+    .then(() => {
+      res.status(200)
+      res.send('Comment successfully saved')
+    })
+    .catch(err => {
+      return next(new RequestError(400, err))
+    })
 })
 
 router.put('/:commentId', authenticate, authorize, (req, res, next) => {
@@ -40,37 +40,35 @@ router.put('/:commentId', authenticate, authorize, (req, res, next) => {
     Change[it] = req.body[it]
   }
   Comment.findOneAndUpdate({ id: req.params.commentId }, Change)
-  .then(() => {
-    res.status(200)
-    res.send('complete')
-  })
-  .catch(err => {
-    return next(new RequestError(400, err))
-  })
+    .then(() => {
+      res.status(200)
+      res.send('complete')
+    })
+    .catch(err => {
+      return next(new RequestError(400, err))
+    })
 })
 
 router.get('/:commentId', authenticate, (req, res, next) => {
   Comment.findOne({ id: req.params.commentId })
-  .then (findres => {
-        res.status(200)
-        res.send(comment)
-  })
-  .catch(err => {
-    return next(new RequestError(400, err))
-  })
+    .then((comment) => {
+      res.status(200)
+      res.send(comment)
+    })
+    .catch(err => {
+      return next(new RequestError(400, err))
+    })
 })
 
 router.delete('/:commentId', authenticate, authorize, (req, res, next) => {
   Comment.findOneAndDelete({ id: req.params.commentId })
-    .then (findres => {
-      console.log('deleted')
-        res.status(200)
-        res.send('deleted')
+    .then(() => {
+      res.status(200).send('deleted')
     })
-    .catch(err => {
+    .catch((err) => {
       console.log('err')
       return next(new RequestError(400, err))
     })
-})   
+})
 
 module.exports = router

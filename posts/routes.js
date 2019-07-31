@@ -9,6 +9,7 @@ const Post = require('./schema')
 const RequestError = require('../errors/RequestError')
 const router = express.Router()
 const comment = require('../comments/routes')
+const toJson = require('./services').postSevricetoJson
 
 // This router will give response for post, get, put and delete request by given postId.
 // For sake of security user must pass authentication to create a new post and athourization to change existing post
@@ -58,7 +59,7 @@ router.get('/:postId', authenticate, (req, res, next) => {
   Post.findOne({ postId: req.params.postId })
     .then((post) => {
       res.status(200)
-      res.send(post)
+      res.send(toJson(post))
     })
     .catch((err) => {
       return next(new RequestError(400, err))
@@ -80,13 +81,23 @@ router.post('/:postId/like', authenticate, (req, res, next) => {
   Post.findOne({ postId: req.params.postId })
     .then((post) => {
       if (post.likedBy.indexOf(req.user.id) === -1) {
-        post.likedBy.push(req.user.id)
-        post.save()
-        res.status(200).send('liked')
+        Post.update({ postId: req.params.postId },
+          { $push: { likedBy: req.user.id } })
+          .then(() => {
+            res.status(200).send('liked')
+          })
+          .catch((err) => {
+            return next(new RequestError(400, err))
+          })
       } else {
-        post.likedBy.splice(post.likedBy.indexOf(req.user.id))
-        post.save()
-        res.status(200).send('like removed')
+        Post.update({ postId: req.params.postId },
+          { $pull: { likedBy: req.user.id } })
+          .then(() => {
+            res.status(200).send('like removed')
+          })
+          .catch((err) => {
+            return next(new RequestError(400, err))
+          })
       }
     })
     .catch((err) => {
